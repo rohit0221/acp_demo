@@ -1,5 +1,5 @@
 """
-Main entry point for testing the strategy agent directly
+Main entry point for testing the strategy agent directly.
 """
 
 import json
