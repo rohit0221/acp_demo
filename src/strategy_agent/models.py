@@ -28,7 +28,7 @@ def update_dialog_stack(left: list[str], right: Optional[str]) -> list[str]:
 
 class EmailClassification(BaseModel):
     """Email classification results from CrewAI agent."""
-    type: Literal["sales", "support", "spam", "personal", "urgent"]
+    type: Literal["sales", "support", "spam", "personal", "urgent", "unknown", "error"]
     priority: Literal["high", "medium", "low"]
     confidence: float = Field(ge=0.0, le=1.0)
     reasoning: str

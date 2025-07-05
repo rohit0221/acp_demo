@@ -59,16 +59,16 @@ class ACPClient:
         
         url = f"{self.agent_endpoints[agent_name]}/runs"
         
-        # Map agent names to actual agent function names
+        # Map agent names to actual agent names (now properly defined)
         agent_function_names = {
-            "classifier": "email_classifier_agent",
-            "strategy": "strategy_planning_agent", 
-            "response": "response_generation_agent"
+            "classifier": "email-classifier",
+            "strategy": "strategy-planner", 
+            "response": "response-generator"
         }
         
         agent_function_name = agent_function_names.get(agent_name, agent_name)
         
-        # Prepare ACP request format
+        # Prepare ACP request format according to ACP specification
         acp_request = {
             "agent_name": agent_function_name,
             "input": [
@@ -167,9 +167,14 @@ class ACPClient:
             if "error" in response:
                 raise Exception(f"Classification failed: {response['error']}")
             
-            # Extract classification data
+            # Extract classification data  
+            classification_type = response.get("type", "support")
+            # Map invalid types to valid ones for strategy agent
+            if classification_type == "error":
+                classification_type = "support"
+            
             return ClassificationResult(
-                type=response.get("type", "unknown"),
+                type=classification_type,
                 priority=response.get("priority", "medium"),
                 confidence=float(response.get("confidence", 0.5)),
                 reasoning=response.get("reasoning", "No reasoning provided"),
@@ -182,7 +187,7 @@ class ACPClient:
             print(f"❌ Email classification failed: {e}")
             # Return fallback classification
             return ClassificationResult(
-                type="unknown",
+                type="support",
                 priority="medium",
                 confidence=0.3,
                 reasoning=f"Classification failed: {str(e)}",

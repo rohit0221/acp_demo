@@ -135,50 +135,75 @@ class HumanReviewInterface:
         print("🤔 REVIEW DECISION")
         print("-" * 20)
         
-        # In a real implementation, this would be an interactive interface
-        # For demo purposes, we'll simulate different decision patterns
+        # Real interactive human input
+        print("Please review the generated response options above.")
+        print(f"Recommended option: {recommended_variant + 1}")
+        print()
         
-        # Auto-approve high confidence responses
-        if response.overall_confidence >= 0.8 and not response.requires_human_review:
-            print("✅ Auto-approving high confidence response")
-            return HumanReviewDecision(
-                approved=True,
-                selected_variant=recommended_variant,
-                feedback="Auto-approved due to high confidence",
-                reviewer="auto-reviewer"
-            )
+        # Get approval decision
+        while True:
+            decision = input("Do you approve this response? (y/n/q for quit): ").lower().strip()
+            if decision in ['y', 'yes']:
+                approved = True
+                break
+            elif decision in ['n', 'no']:
+                approved = False
+                break
+            elif decision in ['q', 'quit']:
+                print("Exiting review process...")
+                return HumanReviewDecision(
+                    approved=False,
+                    feedback="Review process cancelled by user",
+                    reviewer="human-reviewer"
+                )
+            else:
+                print("Please enter 'y' for yes, 'n' for no, or 'q' to quit")
         
-        # Simulate human decision based on response quality
-        if response.overall_confidence >= 0.7:
-            # Approve with minor feedback
-            print("✅ Approving response with minor suggestions")
-            return HumanReviewDecision(
-                approved=True,
-                selected_variant=recommended_variant,
-                feedback="Response approved. Consider adding more specific details if available.",
-                reviewer="human-reviewer"
-            )
+        # If approved, check if they want to select a different variant
+        selected_variant = recommended_variant
+        if approved and len(response.variants) > 1:
+            while True:
+                variant_choice = input(f"Which variant do you want to use? (1-{len(response.variants)}, or press Enter for recommended): ").strip()
+                if not variant_choice:  # User pressed Enter
+                    break
+                try:
+                    variant_num = int(variant_choice)
+                    if 1 <= variant_num <= len(response.variants):
+                        selected_variant = variant_num - 1
+                        break
+                    else:
+                        print(f"Please enter a number between 1 and {len(response.variants)}")
+                except ValueError:
+                    print("Please enter a valid number or press Enter for recommended")
         
-        elif response.overall_confidence >= 0.5:
-            # Approve but request modifications
-            modifications = self._suggest_modifications(response, recommended_variant)
-            print("✅ Approving response with modifications")
-            return HumanReviewDecision(
-                approved=True,
-                selected_variant=recommended_variant,
-                modifications=modifications,
-                feedback="Response approved with modifications to improve clarity and tone.",
-                reviewer="human-reviewer"
-            )
+        # Get feedback
+        feedback = input("Any feedback or comments (optional): ").strip()
+        if not feedback:
+            feedback = "Approved by human reviewer" if approved else "Rejected by human reviewer"
         
-        else:
-            # Reject low confidence responses
-            print("❌ Rejecting response - quality too low")
-            return HumanReviewDecision(
-                approved=False,
-                feedback="Response quality is too low. Please regenerate with different strategy or handle manually.",
-                reviewer="human-reviewer"
-            )
+        # Get modifications if approved
+        modifications = None
+        if approved:
+            modify = input("Do you want to modify the response content? (y/n): ").lower().strip()
+            if modify in ['y', 'yes']:
+                print("Enter your modified response (press Enter twice when done):")
+                lines = []
+                while True:
+                    line = input()
+                    if line == "" and lines and lines[-1] == "":
+                        break
+                    lines.append(line)
+                modifications = "\n".join(lines[:-1])  # Remove the last empty line
+        
+        print("✅ Response approved by human reviewer" if approved else "❌ Response rejected by human reviewer")
+        
+        return HumanReviewDecision(
+            approved=approved,
+            selected_variant=selected_variant,
+            modifications=modifications,
+            feedback=feedback,
+            reviewer="human-reviewer"
+        )
     
     def _suggest_modifications(self, response: ResponseResult, variant_index: int) -> str:
         """Suggest modifications to improve the response."""

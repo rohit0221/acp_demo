@@ -85,8 +85,8 @@ class WorkflowConfig(BaseModel):
     require_review_for_escalation: bool = Field(default=True, description="Always require review for escalations")
     agent_endpoints: Dict[str, str] = Field(
         default_factory=lambda: {
-            "classifier": "http://localhost:8002",
-            "strategy": "http://localhost:8003", 
+            "classifier": "http://localhost:8003",
+            "strategy": "http://localhost:8002", 
             "response": "http://localhost:8004"
         },
         description="Agent endpoint URLs"

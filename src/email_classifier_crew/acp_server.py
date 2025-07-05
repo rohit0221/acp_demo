@@ -7,7 +7,7 @@ This creates a proper ACP agent that can be discovered and communicate with othe
 import sys
 import os
 import json
-from collections.abc import Iterator
+from collections.abc import Iterator, AsyncIterator
 from typing import Any
 
 # Add the parent directory to the path to import crew
@@ -67,8 +67,13 @@ server = Server() if ACP_AVAILABLE else None
 # Initialize CrewAI crew
 crew_instance = EmailClassifierCrew() if CREW_AVAILABLE else None
 
-@server.agent() if ACP_AVAILABLE else lambda f: f
-def email_classifier_agent(input: list, context) -> Iterator:
+@server.agent(
+    name="email-classifier",
+    description="Classifies emails using CrewAI and GPT-4o-mini",
+    input_content_types=["text/plain", "application/json"],
+    output_content_types=["application/json"]
+) if ACP_AVAILABLE else lambda f: f
+async def email_classifier_agent(input: list, context) -> AsyncIterator:
     """
     ACP Agent that wraps CrewAI Email Classifier
     
@@ -119,9 +124,13 @@ def email_classifier_agent(input: list, context) -> Iterator:
             elif part.type == "application/json":
                 try:
                     data = json.loads(part.content)
-                    if "subject" in data:
+                    if "email_subject" in data:
+                        email_subject = data["email_subject"]
+                    elif "subject" in data:
                         email_subject = data["subject"]
-                    if "content" in data:
+                    if "email_content" in data:
+                        email_content += data["email_content"] + "\n"
+                    elif "content" in data:
                         email_content += data["content"] + "\n"
                 except json.JSONDecodeError:
                     pass

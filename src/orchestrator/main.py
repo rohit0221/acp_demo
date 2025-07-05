@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from orchestrator.workflow import WorkflowOrchestrator
 from orchestrator.models import EmailInput, WorkflowConfig
-from orchestrator.human_review import MockInteractiveReview
+from orchestrator.human_review import HumanReviewInterface
 
 
 async def main():
@@ -71,8 +71,8 @@ async def run_test_workflows():
     )
     
     orchestrator = WorkflowOrchestrator(config)
-    # Use mock review for automated testing
-    orchestrator.human_review = MockInteractiveReview(auto_approve=True, always_modify=False)
+    # Use real interactive review for human input
+    orchestrator.human_review = HumanReviewInterface()
     
     # Test cases
     test_emails = [

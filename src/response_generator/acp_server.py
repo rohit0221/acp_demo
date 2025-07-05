@@ -7,7 +7,7 @@ This creates a proper ACP agent that can be discovered and communicate with othe
 import sys
 import os
 import json
-from collections.abc import Iterator
+from collections.abc import Iterator, AsyncIterator
 from typing import Any
 
 # Add the parent directory to the path to import response generator
@@ -60,8 +60,13 @@ server = Server() if ACP_AVAILABLE else None
 # Initialize response generator
 response_generator = ResponseGenerator() if RESPONSE_GEN_AVAILABLE else None
 
-@server.agent() if ACP_AVAILABLE else lambda f: f
-def response_generation_agent(input: list, context) -> Iterator:
+@server.agent(
+    name="response-generator",
+    description="Generates email responses using OpenAI GPT-4o-mini",
+    input_content_types=["application/json"],
+    output_content_types=["application/json"]
+) if ACP_AVAILABLE else lambda f: f
+async def response_generation_agent(input: list, context) -> AsyncIterator:
     """
     ACP Agent that wraps OpenAI Response Generator
     

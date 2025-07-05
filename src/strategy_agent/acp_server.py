@@ -7,7 +7,7 @@ This creates a proper ACP agent that can be discovered and communicate with othe
 import sys
 import os
 import json
-from collections.abc import Iterator
+from collections.abc import Iterator, AsyncIterator
 from typing import Any
 
 # Add the parent directory to the path to import strategy agent
@@ -58,8 +58,13 @@ server = Server() if ACP_AVAILABLE else None
 # Initialize strategy planner
 strategy_planner = StrategyPlanner() if STRATEGY_AVAILABLE else None
 
-@server.agent() if ACP_AVAILABLE else lambda f: f
-def strategy_planning_agent(input: list, context) -> Iterator:
+@server.agent(
+    name="strategy-planner",
+    description="Plans email response strategy using LangGraph and GPT-4o-mini",
+    input_content_types=["application/json"],
+    output_content_types=["application/json"]
+) if ACP_AVAILABLE else lambda f: f
+async def strategy_planning_agent(input: list, context) -> AsyncIterator:
     """
     ACP Agent that wraps LangGraph Strategy Planning Agent
     
