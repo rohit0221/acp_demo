@@ -1,0 +1,32 @@
+classify_email:
+  description: >
+    Analyze the provided email and classify it into one of these categories:
+    - sales: Sales inquiries, pricing questions, product interest, demo requests
+    - support: Technical issues, help requests, account problems, bug reports
+    - spam: Promotional content, suspicious offers, scams, unwanted marketing
+    - personal: Personal messages, casual communication, non-business related
+    - urgent: Time-sensitive matters requiring immediate attention regardless of type
+    
+    Email to classify:
+    Subject: {email_subject}
+    Content: {email_content}
+    
+    Analyze the email content, subject line, tone, and context to determine:
+    1. The primary category this email belongs to
+    2. The priority level (high/medium/low) based on urgency and importance
+    3. Your confidence level in this classification (0.0 to 1.0)
+    4. Clear reasoning explaining your classification decision
+    5. Suggested response tone (professional/friendly/urgent/dismissive)
+    
+    IMPORTANT: Respond with ONLY a valid JSON object in this exact format:
+    {
+      "type": "category_name",
+      "priority": "high/medium/low",
+      "confidence": 0.85,
+      "reasoning": "Clear explanation of classification decision",
+      "suggested_response_tone": "professional/friendly/urgent/dismissive"
+    }
+  expected_output: >
+    A JSON object containing email classification with type, priority, confidence, 
+    reasoning, and suggested response tone. Must be valid JSON format only.
+  agent: email_classifier
